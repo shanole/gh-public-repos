@@ -8,7 +8,7 @@
 
 ## Description
 
-This is a full-stack application that displays 20 open-source (MIT license) public repositories from the GitHub API in a list.
+This is a full-stack application that displays the last updated 20 open-source (MIT license) public repositories from the GitHub API in a list.
 
 ### Features
 

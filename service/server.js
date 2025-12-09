@@ -17,7 +17,7 @@ app.get('/api/health', (req, res) => {
 app.get('/api/repos/initial', async (req, res, next) => {
   try {
     const githubRes = await fetch(
-      'https://api.github.com/search/repositories?q=is:public+license:mit+fork:false&sort=created&order=desc&per_page=20',
+      'https://api.github.com/search/repositories?q=is:public+license:mit+fork:false&sort=updated&order=desc&per_page=20',
       {
         headers: {
           Accept: 'application/vnd.github+json',

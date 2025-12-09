@@ -113,7 +113,7 @@ const App = () => {
       <Container maxWidth="lg" className="py-8">
         <Typography variant="h3">GitHub Public Repos</Typography>
         <Typography variant="body1" color="textSecondary" gutterBottom>
-          Showing 20 public MIT-licensed repositories from GitHub.
+          Showing the latest 20 public MIT-licensed repositories from GitHub.
         </Typography>
 
         {loading && <Typography>Loading...</Typography>}
