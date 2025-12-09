@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Container, List, Typography } from '@mui/material';
+import { Container, Typography } from '@mui/material';
 import type { Repo } from './types';
 import { fetchInitialRepos, fetchReposByOwner } from './api';
-import RepoListItem from './components/RepoListItem';
+import ReposList from './components/ReposList';
 import OwnerReposDrawer from './components/OwnerReposDrawer';
 import RepoToolbar from './components/RepoToolbar';
 
@@ -98,27 +98,24 @@ const App = () => {
     void loadOwnerRepos(owner, 1);
   }, []);
 
-  const handleLoadMoreOwnerRepos = () => {
+  const handleLoadMoreOwnerRepos = useCallback(() => {
     if (!ownerReposState.owner) return;
     const nextPage = ownerReposState.pageNumber + 1;
     void loadOwnerRepos(ownerReposState.owner, nextPage);
-  };
+  }, [ownerReposState.owner, ownerReposState.pageNumber]);
 
   return (
     <div className="min-h-screen bg-slate-50">
       <Container maxWidth="lg" className="py-8">
         <Typography variant="h3">GitHub Public Repos</Typography>
-        <Typography variant="body1" color="text.secondary" gutterBottom>
+        <Typography variant="body1" color="textSecondary" gutterBottom>
           Showing 20 public MIT-licensed repositories from GitHub.
         </Typography>
 
         {loading && <Typography>Loading...</Typography>}
         {error && <Typography color="error">{error}</Typography>}
-        {!loading && !error && repos?.length === 0 && (
-          <Typography>No repositories found.</Typography>
-        )}
 
-        {!loading && !error && repos?.length > 0 && (
+        {!loading && !error && (
           <>
             <RepoToolbar
               repos={repos}
@@ -130,13 +127,7 @@ const App = () => {
               onReset={resetSort}
             />
 
-            <List>
-              {visibleRepos.map((repo) => {
-                return (
-                  <RepoListItem key={repo.id} repo={repo} onShowOwnerRepos={handleShowOwnerRepos} />
-                );
-              })}
-            </List>
+            <ReposList repos={visibleRepos} showOwnerRepos={handleShowOwnerRepos} />
           </>
         )}
 

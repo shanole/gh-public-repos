@@ -61,8 +61,8 @@ const RepoToolbar = ({
 
   return (
     <Box className="flex flex-wrap items-center justify-between my-2 gap-2">
-      <Typography variant="body2" color="text.secondary">
-        {visibleRepos.length} of {repos.length} repositories
+      <Typography variant="body2" color="textSecondary">
+        {visibleRepos?.length} of {repos?.length} repositories
       </Typography>
 
       <Box className="flex flex-wrap items-center gap-2">
@@ -94,7 +94,7 @@ const RepoToolbar = ({
           variant="outlined"
           startIcon={<SortIcon />}
           onClick={openSortMenu}
-          disabled={visibleRepos.length === 0}
+          disabled={visibleRepos?.length === 0}
         >
           Sort by stars
         </Button>

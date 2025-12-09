@@ -1,7 +1,7 @@
-import { Drawer, Box, Typography, IconButton, List, Button } from '@mui/material';
+import { Drawer, Box, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Repo } from '../types';
-import RepoListItem from './RepoListItem';
+import ReposList from './ReposList';
 
 interface OwnerReposDrawerProps {
   open: boolean;
@@ -11,7 +11,7 @@ interface OwnerReposDrawerProps {
   error: string | null;
   hasMore: boolean;
   onClose: () => void;
-  onLoadMore?: () => void;
+  onLoadMore: () => void;
 }
 
 const OwnerReposDrawer = ({
@@ -24,6 +24,7 @@ const OwnerReposDrawer = ({
   onClose,
   onLoadMore,
 }: OwnerReposDrawerProps) => {
+  const isInitialLoading = loading && repos?.length === 0;
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
       <Box
@@ -48,27 +49,18 @@ const OwnerReposDrawer = ({
           </IconButton>
         </Box>
 
-        {loading && <Typography>Loading...</Typography>}
-
-        {error && <Typography color="error">{error}</Typography>}
-
-        {!loading && !error && repos.length === 0 && (
-          <Typography>No repositories found.</Typography>
-        )}
-
-        {repos.length > 0 && (
-          <List disablePadding>
-            {repos.map((repo) => {
-              return <RepoListItem key={repo.id} repo={repo} isOwnerView={true} />;
-            })}
-            {owner && hasMore && (
-              <Box className="mt-2">
-                <Button fullWidth variant="outlined" disabled={loading} onClick={onLoadMore}>
-                  {loading ? 'Loading...' : 'Load more'}
-                </Button>
-              </Box>
-            )}
-          </List>
+        {isInitialLoading || error ? (
+          <Typography color={error ? 'error' : 'textSecondary'}>
+            {error ? error : 'Loading...'}
+          </Typography>
+        ) : (
+          <ReposList
+            repos={repos}
+            isOwnerView={true}
+            hasMore={hasMore}
+            onLoadMore={onLoadMore}
+            loading={loading}
+          />
         )}
       </Box>
     </Drawer>
