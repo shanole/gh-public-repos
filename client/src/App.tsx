@@ -101,11 +101,11 @@ const App = () => {
 
           {loading && <Typography>Loading...</Typography>}
           {error && <Typography color="error">{error}</Typography>}
-          {!loading && !error && repos.length === 0 && (
+          {!loading && !error && repos?.length === 0 && (
             <Typography>No repositories found.</Typography>
           )}
 
-          {!loading && !error && repos.length > 0 && (
+          {!loading && !error && repos?.length > 0 && (
             <>
               <div className="flex my-2">
                 <Button variant="outlined" startIcon={<SortIcon />} onClick={openSortMenu}>
