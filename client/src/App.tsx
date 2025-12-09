@@ -63,11 +63,11 @@ const App = () => {
       setOwnerPageNumber(data.pageNumber);
       setOwnerHasMore(data.hasMore);
     
-    } catch (err) {
-      console.error("Failed to load owner repos:", err);
+    } catch (error) {
+      console.error("Failed to load owner repos:", error);
       const message =
-        err instanceof Error
-          ? err.message
+        error instanceof Error
+          ? error.message
           : `Failed to load repos for ${owner}`;
       setOwnerError(message);
     } finally {
@@ -96,16 +96,19 @@ const App = () => {
     <>
     <div className="min-h-screen bg-slate-50">
       <Container maxWidth="lg" className="py-8">
+        
         <Typography variant="h3">GitHub Public Repos</Typography>
         <Typography variant="body1" color="text.secondary" gutterBottom>
           Showing 20 public MIT-licensed repositories
           from GitHub.
         </Typography>
+
         {loading && <Typography>Loading...</Typography>}
         {error && <Typography color="error">{error}</Typography>}
         {!loading && !error && repos.length === 0 && (
           <Typography>No repositories found.</Typography>
         )}
+
         {!loading && !error && repos.length > 0 && (
           <>
           <div className="flex my-2">
@@ -117,7 +120,6 @@ const App = () => {
               Sort by stars
             </Button>
           </div>
-
           <Menu anchorEl={sortAnchor} open={Boolean(sortAnchor)} onClose={closeSortMenu}>
             <MenuItem onClick={sortReposAscending}>Stars: Low → High</MenuItem>
             <MenuItem onClick={sortReposDescending}>Stars: High → Low</MenuItem>
@@ -129,6 +131,7 @@ const App = () => {
           </List>
           </>
         )}
+
         <OwnerReposDrawer
           open={drawerOpen}
           owner={selectedOwner}
@@ -139,6 +142,7 @@ const App = () => {
           onClose={() => setDrawerOpen(false)}
           onLoadMore={handleLoadMoreOwnerRepos}
         />
+
       </Container>
     </div>
     </>

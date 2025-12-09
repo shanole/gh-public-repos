@@ -25,7 +25,7 @@ app.get("/api/repos/initial", async (req, res, next) => {
       }
     }) 
     if (!githubRes.ok) {
-      const error = new Error('Github API error');
+      const error = new Error('Failed to load initial repositories from Github API');
       error.status = githubRes.status;
       return next(error);
     }
@@ -72,7 +72,7 @@ app.get("/api/repos/:owner", async (req, res, next) => {
     );
 
     if (!githubRes.ok) {
-      const error = new Error('Github API error');
+      const error = new Error(`Failed to load repositories for owner: ${owner}`);
       error.status = githubRes.status;
       return next(error);
     }
@@ -109,7 +109,7 @@ app.get("/api/repos/:owner", async (req, res, next) => {
 });
 
 app.use((req, res, next) => {
-    const error = new Error('Not found');
+    const error = new Error('Resource does not exist or is not accessible.');
     error.status = 404;
     next(error);
 });
