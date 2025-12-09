@@ -11,7 +11,6 @@ export interface Repo {
 export interface OwnerRepoResponse {
   pageNumber: number;
   pageSize: number;
-  count: number;
   hasMore: boolean;
   repos: Repo[];
 }

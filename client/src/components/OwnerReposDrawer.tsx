@@ -61,15 +61,14 @@ const OwnerReposDrawer = ({
             {repos.map((repo) => {
               return <RepoListItem key={repo.id} repo={repo} isOwnerView={true} />;
             })}
+            {owner && hasMore && (
+              <Box className="mt-2">
+                <Button fullWidth variant="outlined" disabled={loading} onClick={onLoadMore}>
+                  {loading ? 'Loading...' : 'Load more'}
+                </Button>
+              </Box>
+            )}
           </List>
-        )}
-
-        {owner && hasMore && (
-          <Box className="mt-2">
-            <Button fullWidth variant="outlined" disabled={loading} onClick={onLoadMore}>
-              {loading ? 'Loading...' : 'Load more'}
-            </Button>
-          </Box>
         )}
       </Box>
     </Drawer>

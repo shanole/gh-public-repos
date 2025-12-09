@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import type { Repo } from './types';
@@ -113,7 +113,6 @@ describe('Integration - App component', () => {
     mockFetchReposByOwner.mockResolvedValueOnce({
       pageNumber: 1,
       pageSize: 20,
-      count: ownerReposPageOne.length,
       hasMore: true,
       repos: ownerReposPageOne,
     });
@@ -121,7 +120,6 @@ describe('Integration - App component', () => {
     mockFetchReposByOwner.mockResolvedValueOnce({
       pageNumber: 1,
       pageSize: 20,
-      count: ownerReposPageTwo.length,
       hasMore: false,
       repos: ownerReposPageTwo,
     });
@@ -130,8 +128,8 @@ describe('Integration - App component', () => {
 
     await screen.findByText('repo 1');
 
-    const ownerChip = screen.getByRole('button', { name: 'owner1' });
-    await userEvent.click(ownerChip);
+    const authorButton = screen.getByRole('button', { name: 'Show all author repos' });
+    await userEvent.click(authorButton);
 
     // First page of owner repos
     expect(await screen.findByText('Repos by owner1')).toBeInTheDocument();
@@ -152,8 +150,8 @@ describe('Integration - App component', () => {
     render(<App />);
 
     await screen.findByText('repo 1');
-    const ownerChip = screen.getByRole('button', { name: 'owner1' });
-    await userEvent.click(ownerChip);
+    const authorButton = screen.getByRole('button', { name: 'Show all author repos' });
+    await userEvent.click(authorButton);
 
     expect(await screen.findByText('Owner repo error')).toBeInTheDocument();
   });
@@ -165,7 +163,6 @@ describe('Integration - App component', () => {
     mockFetchReposByOwner.mockResolvedValueOnce({
       pageNumber: 1,
       pageSize: 20,
-      count: 0,
       hasMore: false,
       repos: [],
     });
@@ -173,9 +170,38 @@ describe('Integration - App component', () => {
     render(<App />);
 
     await screen.findByText('repo 1');
-    const ownerChip = screen.getByRole('button', { name: 'owner1' });
-    await userEvent.click(ownerChip);
+    const authorButton = screen.getByRole('button', { name: 'Show all author repos' });
+    await userEvent.click(authorButton);
 
     expect(await screen.findByText('No repositories found.')).toBeInTheDocument();
+  });
+
+  it('filters repos by selected languages', async () => {
+    const repos: Repo[] = [
+      makeRepo({ id: 1, name: 'ts repo', language: 'TypeScript' }),
+      makeRepo({ id: 2, name: 'js repo', language: 'JavaScript' }),
+      makeRepo({ id: 3, name: 'py repo', language: 'Python' }),
+    ];
+
+    mockFetchInitialRepos.mockResolvedValueOnce(repos);
+
+    render(<App />);
+
+    await screen.findByText('ts repo');
+    await screen.findByText('js repo');
+    await screen.findByText('py repo');
+
+    const languageFilter = screen.getByLabelText('Filter by language');
+    await userEvent.click(languageFilter);
+
+    const tsOption = screen.getByRole('option', { name: 'TypeScript' });
+    await userEvent.click(tsOption);
+
+    // Click outside to close the dropdown
+    await userEvent.click(document.body);
+
+    expect(screen.getByText('ts repo')).toBeInTheDocument();
+    expect(screen.queryByText('js repo')).not.toBeInTheDocument();
+    expect(screen.queryByText('py repo')).not.toBeInTheDocument();
   });
 });

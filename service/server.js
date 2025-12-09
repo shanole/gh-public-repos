@@ -8,6 +8,7 @@ const port = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
+// @description Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ ok: true });
 });
@@ -102,7 +103,6 @@ app.get('/api/repos/:owner', async (req, res, next) => {
     res.json({
       pageNumber,
       pageSize,
-      count: simplifiedRepos.length,
       hasMore,
       repos: simplifiedRepos,
     });

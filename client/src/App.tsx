@@ -1,31 +1,44 @@
-import { useEffect, useState } from 'react';
-import { Button, Container, List, Menu, MenuItem, Typography } from '@mui/material';
-import SortIcon from '@mui/icons-material/Sort';
+import { useEffect, useState, useCallback } from 'react';
+import { Container, List, Typography } from '@mui/material';
 import type { Repo } from './types';
 import { fetchInitialRepos, fetchReposByOwner } from './api';
 import RepoListItem from './components/RepoListItem';
 import OwnerReposDrawer from './components/OwnerReposDrawer';
+import RepoToolbar from './components/RepoToolbar';
+
+const INITIAL_PAGE_NUMBER = 1;
+const PAGE_SIZE = 20;
 
 const App = () => {
   const [repos, setRepos] = useState<Repo[]>([]);
-  const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
+  const [originalRepos, setOriginalRepos] = useState<Repo[]>([]);
+
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedOwner, setSelectedOwner] = useState<string | null>(null);
-  const [ownerRepos, setOwnerRepos] = useState<Repo[]>([]);
-  const [ownerPageNumber, setOwnerPageNumber] = useState(1);
-  const [ownerHasMore, setOwnerHasMore] = useState(false);
-  const [ownerLoading, setOwnerLoading] = useState(false);
-  const [ownerError, setOwnerError] = useState<string | null>(null);
+  const [ownerReposState, setOwnerReposState] = useState({
+    repos: [] as Repo[],
+    pageNumber: INITIAL_PAGE_NUMBER,
+    hasMore: false,
+    loading: false,
+    error: null as string | null,
+    owner: null as string | null,
+  });
+
+  const visibleRepos =
+    selectedLanguages.length === 0
+      ? repos
+      : repos.filter((repo) => repo.language && selectedLanguages.includes(repo.language));
 
   useEffect(() => {
     const loadInitialRepos = async () => {
       try {
         const initialRepos = await fetchInitialRepos();
         setRepos(initialRepos);
+        setOriginalRepos(initialRepos);
       } catch (error) {
         console.error('Failed to load initial repositories:', error);
         setError('Failed to load initial repositories');
@@ -37,112 +50,108 @@ const App = () => {
     loadInitialRepos();
   }, []);
 
-  const openSortMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setSortAnchor(event.currentTarget);
-  };
-
-  const closeSortMenu = () => {
-    setSortAnchor(null);
-  };
-
   const sortReposAscending = () => {
-    setRepos([...repos].sort((a, b) => a.stars - b.stars));
-    closeSortMenu();
+    setRepos((prevRepos) => [...prevRepos].sort((a, b) => a.stars - b.stars));
   };
 
   const sortReposDescending = () => {
-    setRepos([...repos].sort((a, b) => b.stars - a.stars));
-    closeSortMenu();
+    setRepos((prevRepos) => [...prevRepos].sort((a, b) => b.stars - a.stars));
+  };
+
+  const resetSort = () => {
+    setRepos(originalRepos);
+    setSelectedLanguages([]);
   };
 
   const loadOwnerRepos = async (owner: string, pageNumber: number) => {
     try {
-      setOwnerLoading(true);
-      setOwnerError(null);
+      setOwnerReposState((prevState) => ({ ...prevState, loading: true, error: null }));
 
-      const data = await fetchReposByOwner(owner, pageNumber, 20);
-      setOwnerRepos((prevRepos) => (pageNumber === 1 ? data.repos : [...prevRepos, ...data.repos]));
-      setOwnerPageNumber(data.pageNumber);
-      setOwnerHasMore(data.hasMore);
+      const data = await fetchReposByOwner(owner, pageNumber, PAGE_SIZE);
+      setOwnerReposState((prevState) => ({
+        ...prevState,
+        repos: pageNumber === 1 ? data.repos : [...prevState.repos, ...data.repos],
+        pageNumber: data.pageNumber,
+        hasMore: data.hasMore,
+        owner,
+      }));
     } catch (error) {
       console.error('Failed to load owner repos:', error);
       const message = error instanceof Error ? error.message : `Failed to load repos for ${owner}`;
-      setOwnerError(message);
+      setOwnerReposState((prevState) => ({ ...prevState, error: message }));
     } finally {
-      setOwnerLoading(false);
+      setOwnerReposState((prevState) => ({ ...prevState, loading: false }));
     }
   };
 
-  const handleShowOwnerRepos = (owner: string) => {
-    setSelectedOwner(owner);
+  const handleShowOwnerRepos = useCallback((owner: string) => {
     setDrawerOpen(true);
-    setOwnerRepos([]);
-    setOwnerPageNumber(1);
-    setOwnerHasMore(false);
-    setOwnerError(null);
+    setOwnerReposState({
+      repos: [],
+      pageNumber: INITIAL_PAGE_NUMBER,
+      hasMore: false,
+      loading: false,
+      error: null,
+      owner,
+    });
 
     void loadOwnerRepos(owner, 1);
-  };
+  }, []);
 
   const handleLoadMoreOwnerRepos = () => {
-    if (!selectedOwner) return;
-    const nextPage = ownerPageNumber + 1;
-    void loadOwnerRepos(selectedOwner, nextPage);
+    if (!ownerReposState.owner) return;
+    const nextPage = ownerReposState.pageNumber + 1;
+    void loadOwnerRepos(ownerReposState.owner, nextPage);
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-slate-50">
-        <Container maxWidth="lg" className="py-8">
-          <Typography variant="h3">GitHub Public Repos</Typography>
-          <Typography variant="body1" color="text.secondary" gutterBottom>
-            Showing 20 public MIT-licensed repositories from GitHub.
-          </Typography>
+    <div className="min-h-screen bg-slate-50">
+      <Container maxWidth="lg" className="py-8">
+        <Typography variant="h3">GitHub Public Repos</Typography>
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          Showing 20 public MIT-licensed repositories from GitHub.
+        </Typography>
 
-          {loading && <Typography>Loading...</Typography>}
-          {error && <Typography color="error">{error}</Typography>}
-          {!loading && !error && repos?.length === 0 && (
-            <Typography>No repositories found.</Typography>
-          )}
+        {loading && <Typography>Loading...</Typography>}
+        {error && <Typography color="error">{error}</Typography>}
+        {!loading && !error && repos?.length === 0 && (
+          <Typography>No repositories found.</Typography>
+        )}
 
-          {!loading && !error && repos?.length > 0 && (
-            <>
-              <div className="flex my-2">
-                <Button variant="outlined" startIcon={<SortIcon />} onClick={openSortMenu}>
-                  Sort by stars
-                </Button>
-              </div>
-              <Menu anchorEl={sortAnchor} open={Boolean(sortAnchor)} onClose={closeSortMenu}>
-                <MenuItem onClick={sortReposAscending}>Stars: Low → High</MenuItem>
-                <MenuItem onClick={sortReposDescending}>Stars: High → Low</MenuItem>
-              </Menu>
-              <List>
-                {repos.map((repo) => {
-                  return (
-                    <RepoListItem
-                      key={repo.id}
-                      repo={repo}
-                      onShowOwnerRepos={handleShowOwnerRepos}
-                    />
-                  );
-                })}
-              </List>
-            </>
-          )}
+        {!loading && !error && repos?.length > 0 && (
+          <>
+            <RepoToolbar
+              repos={repos}
+              visibleRepos={visibleRepos}
+              selectedLanguages={selectedLanguages}
+              onLanguageChange={setSelectedLanguages}
+              onSortAscending={sortReposAscending}
+              onSortDescending={sortReposDescending}
+              onReset={resetSort}
+            />
 
-          <OwnerReposDrawer
-            open={drawerOpen}
-            owner={selectedOwner}
-            repos={ownerRepos}
-            loading={ownerLoading}
-            error={ownerError}
-            hasMore={ownerHasMore}
-            onClose={() => setDrawerOpen(false)}
-            onLoadMore={handleLoadMoreOwnerRepos}
-          />
-        </Container>
-      </div>
-    </>
+            <List>
+              {visibleRepos.map((repo) => {
+                return (
+                  <RepoListItem key={repo.id} repo={repo} onShowOwnerRepos={handleShowOwnerRepos} />
+                );
+              })}
+            </List>
+          </>
+        )}
+
+        <OwnerReposDrawer
+          open={drawerOpen}
+          owner={ownerReposState.owner}
+          repos={ownerReposState.repos}
+          loading={ownerReposState.loading}
+          error={ownerReposState.error}
+          hasMore={ownerReposState.hasMore}
+          onClose={() => setDrawerOpen(false)}
+          onLoadMore={handleLoadMoreOwnerRepos}
+        />
+      </Container>
+    </div>
   );
 };
 

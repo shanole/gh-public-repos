@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ListItem, ListItemText, Box, Chip, Link as MuiLink, Button } from '@mui/material';
+import { memo } from 'react';
+import { ListItem, ListItemText, Box, Chip, Link as MuiLink, Tooltip, Button } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import CodeIcon from '@mui/icons-material/Code';
 import PersonIcon from '@mui/icons-material/Person';
@@ -12,17 +12,11 @@ interface RepoListItemProps {
 }
 
 const RepoListItem = ({ repo, onShowOwnerRepos, isOwnerView = false }: RepoListItemProps) => {
-  const [showAuthorButton, setShowAuthorButton] = useState(false);
-
-  const handleMouseEnter = () => setShowAuthorButton(true);
-  const handleMouseLeave = () => setShowAuthorButton(false);
-
   const handleClickShowOwner = () => {
     if (onShowOwnerRepos) {
       onShowOwnerRepos(repo.owner);
     }
   };
-
   return (
     <ListItem divider className="px-4 py-3" alignItems="flex-start">
       <ListItemText
@@ -48,12 +42,8 @@ const RepoListItem = ({ repo, onShowOwnerRepos, isOwnerView = false }: RepoListI
                 variant="outlined"
               />
             )}
-            {isOwnerView ? null : (
-              <Box
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                className="cursor-pointer"
-              >
+            {!isOwnerView && (
+              <Tooltip title="Show All Author Repos" placement="right">
                 <Chip
                   icon={<PersonIcon color="secondary" />}
                   label={repo.owner}
@@ -61,19 +51,30 @@ const RepoListItem = ({ repo, onShowOwnerRepos, isOwnerView = false }: RepoListI
                   variant="outlined"
                   onClick={handleClickShowOwner}
                 />
-                {showAuthorButton && (
-                  <Button size="small" onClick={handleClickShowOwner} color="secondary">
-                    Show Owner's Repos
-                  </Button>
-                )}
-              </Box>
+              </Tooltip>
             )}
           </Box>
         }
-        secondary={repo.description || ''}
+        secondary={
+          <Box className="flex flex-col">
+            <span>{repo.description || ''}</span>
+            {!isOwnerView && (
+              <Button
+                size="small"
+                startIcon={<PersonIcon />}
+                onClick={handleClickShowOwner}
+                color="secondary"
+                sx={{ width: 'fit-content', padding: 0 }}
+              >
+                Show all author repos
+              </Button>
+            )}
+          </Box>
+        }
+        slotProps={{ secondary: { component: 'div' } }}
       />
     </ListItem>
   );
 };
 
-export default RepoListItem;
+export default memo(RepoListItem);
