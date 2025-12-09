@@ -15,9 +15,10 @@ import type { Repo } from "../types";
 interface RepoListItemProps {
     repo: Repo;
     onShowOwnerRepos?: (owner: string) => void;
+    isOwnerView?: boolean;
 }
 
-const RepoListItem = ({ repo, onShowOwnerRepos } : RepoListItemProps) => {
+const RepoListItem = ({ repo, onShowOwnerRepos, isOwnerView = false } : RepoListItemProps) => {
     const [showAuthorButton, setShowAuthorButton] = useState(false);
 
     const handleMouseEnter = () => setShowAuthorButton(true);
@@ -62,28 +63,30 @@ const RepoListItem = ({ repo, onShowOwnerRepos } : RepoListItemProps) => {
                     variant="outlined"
                     />
                 )}
-
-                <Box
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                    className="cursor-pointer"
-                >
-                    <Chip
-                        icon={<PersonIcon color="secondary"/>}
-                        label={repo.owner}
-                        size="small"
-                        variant="outlined"
-                    />
-                    {showAuthorButton && (
-                        <Button
+                {isOwnerView ? null : (
+                    <Box
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                        className="cursor-pointer"
+                    >
+                        <Chip
+                            icon={<PersonIcon color="secondary"/>}
+                            label={repo.owner}
                             size="small"
+                            variant="outlined"
                             onClick={handleClickShowOwner}
-                            color="secondary"
-                        >
-                            Show Owner's Repos
-                        </Button>
-                    )}
-                </Box>
+                        />
+                        {showAuthorButton && (
+                            <Button
+                                size="small"
+                                onClick={handleClickShowOwner}
+                                color="secondary"
+                            >
+                                Show Owner's Repos
+                            </Button>
+                        )}
+                    </Box>
+                )}
                 </Box>
             }
             secondary={repo.description || ""}

@@ -1,19 +1,25 @@
 import { useEffect, useState } from "react";
-import { Button, Container, List, Menu, MenuItem, Typography, Drawer, Box, IconButton } from "@mui/material"
+import { Button, Container, List, Menu, MenuItem, Typography } from "@mui/material"
 import type { Repo } from "./types";
-import { fetchInitialRepos } from "./api";
+import { fetchInitialRepos, fetchReposByOwner } from "./api";
 import RepoListItem from "./components/RepoListItem";
 import SortIcon from '@mui/icons-material/Sort';
-import CloseIcon from "@mui/icons-material/Close";
+import OwnerReposDrawer from "./components/OwnerReposDrawer";
 
 const App = () => {
   const [repos, setRepos] = useState<Repo[]>([]);
   const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedOwner, setSelectedOwner] = useState<string | null>(null);
-
+  
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState<string | null>(null);
+  const [ownerRepos, setOwnerRepos] = useState<Repo[]>([]);
+  const [ownerPageNumber, setOwnerPageNumber] = useState(1);
+  const [ownerHasMore, setOwnerHasMore] = useState(false);
+  const [ownerLoading, setOwnerLoading] = useState(false);
+  const [ownerError, setOwnerError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadInitialRepos = async () => {
@@ -46,11 +52,44 @@ const App = () => {
     setRepos([...repos].sort((a, b) => b.stars - a.stars)); 
     closeSortMenu();
   };
+  
+  const loadOwnerRepos = async (owner: string, pageNumber: number) => {
+    try {
+      setOwnerLoading(true);
+      setOwnerError(null);
 
+      const data = await fetchReposByOwner(owner, pageNumber, 20);
+      setOwnerRepos(prevRepos => pageNumber === 1 ? data.repos : [...prevRepos, ...data.repos]);
+      setOwnerPageNumber(data.pageNumber);
+      setOwnerHasMore(data.hasMore);
+    
+    } catch (err) {
+      console.error("Failed to load owner repos:", err);
+      const message =
+        err instanceof Error
+          ? err.message
+          : `Failed to load repos for ${owner}`;
+      setOwnerError(message);
+    } finally {
+      setOwnerLoading(false);
+    }
+  }
+  
   const handleShowOwnerRepos = (owner: string) => {
-    console.log("Show repos for owner:", owner);
     setSelectedOwner(owner);
     setDrawerOpen(true);
+    setOwnerRepos([]);
+    setOwnerPageNumber(1);
+    setOwnerHasMore(false);
+    setOwnerError(null);
+
+    void loadOwnerRepos(owner, 1);
+  };
+
+  const handleLoadMoreOwnerRepos = () => {
+    if (!selectedOwner) return;
+    const nextPage = ownerPageNumber + 1;
+    void loadOwnerRepos(selectedOwner, nextPage);
   };
 
   return (
@@ -75,7 +114,7 @@ const App = () => {
               startIcon={<SortIcon />}
               onClick={openSortMenu}
             >
-              Sort By Stars
+              Sort by stars
             </Button>
           </div>
 
@@ -90,35 +129,16 @@ const App = () => {
           </List>
           </>
         )}
-
-        <Drawer
-          anchor="right"
+        <OwnerReposDrawer
           open={drawerOpen}
+          owner={selectedOwner}
+          repos={ownerRepos}
+          loading={ownerLoading}
+          error={ownerError}
+          hasMore={ownerHasMore}
           onClose={() => setDrawerOpen(false)}
-        >
-          <Box
-            sx={{
-              width: "40vw",
-              p: 2,
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Typography variant="h6">
-                {selectedOwner ? `Repos by ${selectedOwner}` : "Author Repos"}
-              </Typography>
-              <IconButton onClick={() => setDrawerOpen(false)} size="small">
-                <CloseIcon />
-              </IconButton>
-            </Box>
-
-            <Typography variant="body2" color="text.secondary">
-              {`This drawer will show ${selectedOwner}'s repositories.`}
-            </Typography>
-          </Box>
-        </Drawer>
+          onLoadMore={handleLoadMoreOwnerRepos}
+        />
       </Container>
     </div>
     </>
