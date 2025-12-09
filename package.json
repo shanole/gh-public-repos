@@ -1,5 +1,10 @@
 {
+  "scripts": {
+    "format": "prettier --write ."
+  },
   "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.7.4"
   }
 }
