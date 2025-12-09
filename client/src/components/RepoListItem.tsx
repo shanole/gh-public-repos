@@ -1,9 +1,11 @@
+import { useState } from "react";
 import {
   ListItem,
   ListItemText,
   Box,
   Chip,
   Link as MuiLink,
+  Button,
 } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import CodeIcon from "@mui/icons-material/Code";
@@ -12,56 +14,81 @@ import type { Repo } from "../types";
 
 interface RepoListItemProps {
     repo: Repo;
+    onShowOwnerRepos?: (owner: string) => void;
 }
 
-const RepoListItem = ({ repo } : RepoListItemProps) => {
-  return (
-    <ListItem
-      divider
-      className="px-4 py-3"
-      alignItems="flex-start"
-    >
-      <ListItemText
-        primary={
-          <Box className="flex flex-wrap items-center gap-2">
-            <MuiLink
-              href={repo.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              underline="hover"
-              variant="h6"
-            >
-              {repo.name}
-            </MuiLink>
+const RepoListItem = ({ repo, onShowOwnerRepos } : RepoListItemProps) => {
+    const [showAuthorButton, setShowAuthorButton] = useState(false);
 
-            <Chip
-              icon={<StarIcon color="warning"/>}
-              label={repo.stars}
-              size="small"
-            />
+    const handleMouseEnter = () => setShowAuthorButton(true);
+    const handleMouseLeave = () => setShowAuthorButton(false);
 
-            {repo.language && (
-              <Chip
-                icon={<CodeIcon color="primary"/>}
-                label={repo.language}
-                size="small"
-                variant="outlined"
-              />
-            )}
-
-            {repo.owner && (
-            <Chip
-              icon={<PersonIcon color="secondary"/>}
-              label={repo.owner}
-              size="small"
-              variant="outlined"
-            />
-            )}
-          </Box>
+    const handleClickShowOwner = () => {
+        if (onShowOwnerRepos) {
+            onShowOwnerRepos(repo.owner);
         }
-        secondary={repo.description || "No description provided."}
-      />
-    </ListItem>
+    };
+
+    return (
+        <ListItem
+            divider
+            className="px-4 py-3"
+            alignItems="flex-start"
+        >
+            <ListItemText
+            primary={
+                <Box className="flex flex-wrap items-center gap-2">
+                <MuiLink
+                    href={repo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    variant="h6"
+                >
+                    {repo.name}
+                </MuiLink>
+
+                <Chip
+                    icon={<StarIcon color="warning"/>}
+                    label={repo.stars}
+                    size="small"
+                />
+
+                {repo.language && (
+                    <Chip
+                    icon={<CodeIcon color="primary"/>}
+                    label={repo.language}
+                    size="small"
+                    variant="outlined"
+                    />
+                )}
+
+                <Box
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    className="cursor-pointer"
+                >
+                    <Chip
+                        icon={<PersonIcon color="secondary"/>}
+                        label={repo.owner}
+                        size="small"
+                        variant="outlined"
+                    />
+                    {showAuthorButton && (
+                        <Button
+                            size="small"
+                            onClick={handleClickShowOwner}
+                            color="secondary"
+                        >
+                            Show Owner's Repos
+                        </Button>
+                    )}
+                </Box>
+                </Box>
+            }
+            secondary={repo.description || ""}
+            />
+        </ListItem>
   )
 }
 

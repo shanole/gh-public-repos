@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { Container, List, Typography } from "@mui/material"
+import { Button, Container, List, Menu, MenuItem, Typography } from "@mui/material"
 import type { Repo } from "./types";
 import { fetchInitialRepos } from "./api";
 import RepoListItem from "./components/RepoListItem";
+import SortIcon from '@mui/icons-material/Sort';
 
 const App = () => {
   const [repos, setRepos] = useState<Repo[]>([]);
+  const [sortAnchor, setSortAnchor] = useState<null | HTMLElement>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -25,6 +28,26 @@ const App = () => {
     loadInitialRepos();
   }, []);
 
+  const openSortMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setSortAnchor(event.currentTarget);
+  };
+
+  const closeSortMenu = () => { setSortAnchor(null)};
+
+  const sortReposAscending = () => {
+    setRepos([...repos].sort((a, b) => a.stars - b.stars)); 
+    closeSortMenu();
+  };
+
+  const sortReposDescending = () => {
+    setRepos([...repos].sort((a, b) => b.stars - a.stars)); 
+    closeSortMenu();
+  };
+
+  const handleShowOwnerRepos = (owner: string) => {
+    console.log("Show repos for owner:", owner);
+  };
+
   return (
     <>
     <div className="min-h-screen bg-slate-50">
@@ -39,11 +62,29 @@ const App = () => {
         {!loading && !error && repos.length === 0 && (
           <Typography>No repositories found.</Typography>
         )}
-        <List>
-          {repos.map((repo) => {
-            return (<RepoListItem key={repo.id} repo={repo} />)
-          })}
-        </List>
+        {!loading && !error && repos.length > 0 && (
+          <>
+          <div className="flex my-2">
+            <Button
+              variant="outlined"
+              startIcon={<SortIcon />}
+              onClick={openSortMenu}
+            >
+              Sort By Stars
+            </Button>
+          </div>
+
+          <Menu anchorEl={sortAnchor} open={Boolean(sortAnchor)} onClose={closeSortMenu}>
+            <MenuItem onClick={sortReposAscending}>Stars: Low → High</MenuItem>
+            <MenuItem onClick={sortReposDescending}>Stars: High → Low</MenuItem>
+          </Menu>
+                  <List>
+                    {repos.map((repo) => {
+                      return (<RepoListItem key={repo.id} repo={repo} onShowOwnerRepos={handleShowOwnerRepos} />)
+                    })}
+                  </List>
+          </>
+        )}
       </Container>
     </div>
     </>
