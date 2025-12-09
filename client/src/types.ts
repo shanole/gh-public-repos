@@ -7,3 +7,11 @@ export interface Repo {
     language: string | null;
     owner: string;
 }
+
+export interface OwnerRepoResponse {
+    pageNumber: number;
+    pageSize: number;
+    count: number;
+    hasMore: boolean;
+    repos: Repo[];
+}

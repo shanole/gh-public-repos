@@ -80,11 +80,13 @@ app.get("/api/repos/:owner", async (req, res, next) => {
     const repos = await githubRes.json();
 
     const simplifiedRepos = repos.map((repo) => ({
+      id: repo.id,
       name: repo.name,
+      url: repo.html_url,
+      description: repo.description,
       stars: repo.stargazers_count,
       language: repo.language,
-      owner: repo.owner?.login,
-      html_url: repo.html_url,
+      owner: repo.owner?.login
     }));
 
     const linkHeader = githubRes.headers.get("link") || githubRes.headers.get("Link");
