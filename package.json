@@ -1,8 +1,13 @@
 {
   "scripts": {
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev:service": "cd service && npm run start",
+    "dev:client": "cd client && npm run dev",
+    "test:client": "cd client && npm run test",
+    "dev": "concurrently \"npm run dev:service\" \"npm run dev:client\""
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.7.4"
