@@ -40,8 +40,9 @@ Built with Express.js (backend) and React + Vite + TypeScript (frontend). I util
 
 ### Run project
 
-1. Install dependencies for both backend and frontend
+1. Install all dependencies from the root folder:
    ```bash
+   npm install
    cd service && npm install
    cd ../client && npm install
    cd ..
@@ -56,7 +57,7 @@ Built with Express.js (backend) and React + Vite + TypeScript (frontend). I util
    - Start the Express API on `http://localhost:8000`
    - start the React frontend on `http://localhost:3000`
 
-1. Your browser should open automatically. If not, go to:
+1. Open the application in your browser:
    ```
    http://localhost:3000
    ```

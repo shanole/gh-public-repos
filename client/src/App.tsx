@@ -63,7 +63,7 @@ const App = () => {
     setSelectedLanguages([]);
   };
 
-  const loadOwnerRepos = async (owner: string, pageNumber: number) => {
+  const loadOwnerRepos = useCallback(async (owner: string, pageNumber: number) => {
     try {
       setOwnerReposState((prevState) => ({ ...prevState, loading: true, error: null }));
 
@@ -82,27 +82,31 @@ const App = () => {
     } finally {
       setOwnerReposState((prevState) => ({ ...prevState, loading: false }));
     }
-  };
-
-  const handleShowOwnerRepos = useCallback((owner: string) => {
-    setDrawerOpen(true);
-    setOwnerReposState({
-      repos: [],
-      pageNumber: INITIAL_PAGE_NUMBER,
-      hasMore: false,
-      loading: false,
-      error: null,
-      owner,
-    });
-
-    void loadOwnerRepos(owner, 1);
   }, []);
+
+  const handleShowOwnerRepos = useCallback(
+    (owner: string) => {
+      setDrawerOpen(true);
+      setOwnerReposState((prev) => ({
+        ...prev,
+        owner,
+        repos: [],
+        pageNumber: INITIAL_PAGE_NUMBER,
+        hasMore: false,
+        loading: true,
+        error: null,
+      }));
+
+      void loadOwnerRepos(owner, 1);
+    },
+    [loadOwnerRepos],
+  );
 
   const handleLoadMoreOwnerRepos = useCallback(() => {
     if (!ownerReposState.owner) return;
     const nextPage = ownerReposState.pageNumber + 1;
     void loadOwnerRepos(ownerReposState.owner, nextPage);
-  }, [ownerReposState.owner, ownerReposState.pageNumber]);
+  }, [ownerReposState.owner, ownerReposState.pageNumber, loadOwnerRepos]);
 
   return (
     <div className="min-h-screen bg-slate-50">

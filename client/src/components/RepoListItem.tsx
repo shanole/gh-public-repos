@@ -17,6 +17,8 @@ const RepoListItem = ({ repo, onShowOwnerRepos, isOwnerView = false }: RepoListI
       onShowOwnerRepos(repo.owner);
     }
   };
+  const canShowOwnerButton = !!onShowOwnerRepos && !isOwnerView && !!repo.owner;
+
   return (
     <ListItem divider className="px-4 py-3" alignItems="flex-start">
       <ListItemText
@@ -42,7 +44,7 @@ const RepoListItem = ({ repo, onShowOwnerRepos, isOwnerView = false }: RepoListI
                 variant="outlined"
               />
             )}
-            {!isOwnerView && (
+            {canShowOwnerButton && (
               <Tooltip title="Show All Author Repos" placement="right">
                 <Chip
                   icon={<PersonIcon color="secondary" />}
@@ -58,7 +60,7 @@ const RepoListItem = ({ repo, onShowOwnerRepos, isOwnerView = false }: RepoListI
         secondary={
           <Box className="flex flex-col">
             <span>{repo.description || ''}</span>
-            {!isOwnerView && (
+            {canShowOwnerButton && (
               <Button
                 size="small"
                 startIcon={<PersonIcon />}

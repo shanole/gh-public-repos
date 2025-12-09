@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type MouseEvent } from 'react';
 import {
   Button,
   Box,
@@ -41,7 +41,7 @@ const RepoToolbar = ({
     [repos],
   );
 
-  const openSortMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const openSortMenu = (event: MouseEvent<HTMLButtonElement>) => {
     setSortAnchor(event.currentTarget);
   };
 
@@ -100,7 +100,7 @@ const RepoToolbar = ({
         </Button>
         <Button onClick={onReset}>Reset</Button>
 
-        <Menu anchorEl={sortAnchor} open={Boolean(sortAnchor)} onClose={closeSortMenu}>
+        <Menu anchorEl={sortAnchor} open={!!sortAnchor} onClose={closeSortMenu}>
           <MenuItem onClick={handleSortAscending}>Stars: Low → High</MenuItem>
           <MenuItem onClick={handleSortDescending}>Stars: High → Low</MenuItem>
         </Menu>
