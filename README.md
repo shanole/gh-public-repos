@@ -76,3 +76,4 @@ I utilized ChatGPT and the GitHub Copilot assistant in VS Code for the following
 - Styling UI with MatUI components and Tailwind classes
 - In-line code suggestions/typo catching
 - Help with vitest config and syntax
+- Final proofreading and code review
